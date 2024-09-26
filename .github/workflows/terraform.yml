@@ -35,6 +35,15 @@ jobs:
         with:
           terraform_version: 1.9.6
       
+      - name: Assume IAM Role
+        id: assume_role
+        run: |
+          ROLE_ARN="arn:aws:iam::145023129007:role/GithubActionsRole"
+          CREDS=$(aws sts assume-role-with-web-identity --role-arn $ROLE_ARN --role-session-name GitHubActionsSession --output json)
+          echo "AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .Credentials.SessionToken)" >> $GITHUB_ENV
+      
       - name: Terraform Plan
         env:
           AWS_REGION: us-east-1
