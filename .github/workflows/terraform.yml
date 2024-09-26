@@ -34,13 +34,10 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.9.6
-      
-      - name: Configure AWS CLI
-        run: |
-          echo "[default]" > ~/.aws/config
-          echo "region = us-east-1" >> ~/.aws/config
 
       - name: Terraform Plan
+        env:
+          AWS_REGION: us-east-1
         run: |
           terraform init
           terraform plan
