@@ -35,11 +35,6 @@ jobs:
         with:
           terraform_version: 1.9.6
       
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-east-1 
-
       - name: Terraform Plan
         env:
           AWS_REGION: us-east-1
