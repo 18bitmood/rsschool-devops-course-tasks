@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   terraform-check:
     runs-on: ubuntu-latest
@@ -35,34 +39,14 @@ jobs:
         with:
           terraform_version: 1.9.6
       
-      - name: Install AWS CLI
-        run: |
-          sudo apt-get install -y awscli jq
-      
-      - name: Assume IAM Role
-        id: assume_role
-        run: |
-          ROLE_ARN="arn:aws:iam::145023129007:role/GithubActionsRole"
-          WEB_IDENTITY_TOKEN="${{ github.token }}" 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::145023129007:role/GithubActionsRole
+          role-session-name: samplerolesession
+          aws-region: us-east-1
 
-          # Assuming role with the web identity token
-          CREDS=$(aws sts assume-role-with-web-identity \
-            --role-arn $ROLE_ARN \
-            --role-session-name GitHubActionsSession \
-            --web-identity-token $WEB_IDENTITY_TOKEN \
-            --output json)
-
-          # Output the temporary credentials
-          echo "Assumed role credentials: $CREDS"
-
-          # Set environment variables for AWS credentials
-          echo "AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)" >> $GITHUB_ENV
-          echo "AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .Credentials.SessionToken)" >> $GITHUB_ENV
-      
       - name: Terraform Plan
-        env:
-          AWS_REGION: us-east-1
         run: |
           terraform init
           terraform plan
