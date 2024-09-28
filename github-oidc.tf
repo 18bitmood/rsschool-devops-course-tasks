@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "github_assume_role_policy" {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
-        "sts.amazonaws.com"
+        "repo:18bitmood/rsschool-devops-course-tasks:ref:refs/heads/*"
       ]
     }
   }
