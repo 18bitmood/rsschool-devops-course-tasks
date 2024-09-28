@@ -8,7 +8,7 @@ terraform {
 }
 
 data "aws_s3_bucket" "existing_bucket" {
-  bucket = "terraform-devops---rssc" # Reference your existing bucket name
+  bucket = var.bucket_name
 }
 
 resource "aws_s3_bucket_policy" "my_bucket_policy" {
