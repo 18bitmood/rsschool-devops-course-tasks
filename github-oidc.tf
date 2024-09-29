@@ -27,7 +27,8 @@ data "aws_iam_policy_document" "github_assume_role_policy" {
       values = [
         "repo:18bitmood/rsschool-devops-course-tasks:ref:refs/heads/main",
         "repo:18bitmood/rsschool-devops-course-tasks:ref:refs/heads/task_1_submission",
-        "repo:18bitmood/rsschool-devops-course-tasks:ref:refs/heads/*"
+        "repo:18bitmood/rsschool-devops-course-tasks:ref:refs/heads/*",
+        "repo:18bitmood/rsschool-devops-course-tasks:pull_request"
       ]
     }
   }
