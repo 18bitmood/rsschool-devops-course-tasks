@@ -19,6 +19,18 @@ resource "aws_network_acl" "public_acl" {
     rule_no    = 101
   }
 
+  ingress {
+    protocol   = "icmp"
+    from_port  = 0
+    to_port    = 65535
+    icmp_type  = -1
+    icmp_code  = -1
+    cidr_block = "0.0.0.0/0"
+    action     = "allow"
+    rule_no    = 102
+  }
+
+
   egress {
     protocol   = "-1"
     from_port  = 0
@@ -49,6 +61,17 @@ resource "aws_network_acl" "private_acl" {
     cidr_block = "10.0.0.0/16"
     action     = "allow"
     rule_no    = 100
+  }
+
+  ingress {
+    protocol   = "icmp"
+    from_port  = 0
+    to_port    = 255
+    icmp_type  = -1
+    icmp_code  = -1
+    cidr_block = "0.0.0.0/0"
+    action     = "allow"
+    rule_no    = 101
   }
 
   egress {
