@@ -27,3 +27,9 @@ variable "azs" {
   description = "Availability Zones"
   default     = ["us-east-1a", "us-east-1b"]
 }
+
+variable "bastion_key_name" {
+  type        = string
+  description = "Name of the key pair to use for the bastion host"
+  default     = "bastion"
+}

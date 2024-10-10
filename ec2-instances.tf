@@ -3,6 +3,8 @@ resource "aws_instance" "ubuntu_public_instances" {
   ami           = "ami-005fc0f236362e99f"
   instance_type = "t2.micro"
   subnet_id     = element(aws_subnet.public_subnets[*].id, count.index)
+  key_name      = aws_key_pair.keys.key_name
+  depends_on    = [aws_key_pair.keys]
 
   vpc_security_group_ids = [aws_security_group.allow_all.id]
 
@@ -16,6 +18,8 @@ resource "aws_instance" "ubuntu_private_instances" {
   ami           = "ami-005fc0f236362e99f"
   instance_type = "t2.micro"
   subnet_id     = element(aws_subnet.private_subnets[*].id, count.index)
+  key_name      = aws_key_pair.keys.key_name
+  depends_on    = [aws_key_pair.keys]
 
   vpc_security_group_ids = [aws_security_group.allow_all.id]
 
