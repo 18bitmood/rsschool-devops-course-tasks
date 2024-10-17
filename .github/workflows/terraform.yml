@@ -46,10 +46,22 @@ jobs:
           role-session-name: samplerolesession
           aws-region: us-east-1
 
-      - name: Terraform Plan
+      - name: Configure SSH Keys
         run: |
-          terraform init
-          terraform plan
+          echo "${{ secrets.BASTION_PRIVATE_KEY }}" > bastion.pem
+          echo "${{ secrets.BASTION_PUBLIC_KEY }}" > bastion.pub
+          chmod 600 bastion.pem
+          chmod 644 bastion.pub
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Clean up SSH Keys
+        run: |
+          rm -f bastion.pem bastion.pub
 
   terraform-apply:
     runs-on: ubuntu-latest
@@ -71,7 +83,18 @@ jobs:
           role-session-name: samplerolesession
           aws-region: us-east-1
 
+      - name: Configure SSH Keys
+        run: |
+          echo "${{ secrets.BASTION_PRIVATE_KEY }}" > bastion.pem
+          echo "${{ secrets.BASTION_PUBLIC_KEY }}" > bastion.pub
+          chmod 600 bastion.pem
+          chmod 644 bastion.pub
+
       - name: Terraform Apply
         run: |
           terraform init
           terraform apply -auto-approve
+
+      - name: Clean up SSH Keys
+        run: |
+          rm -f bastion.pem bastion.pub
