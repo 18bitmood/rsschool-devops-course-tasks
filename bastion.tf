@@ -1,8 +1,3 @@
-resource "aws_key_pair" "keys" {
-  key_name   = var.bastion_key_name
-  public_key = file("./${var.bastion_key_name}.pub")
-}
-
 resource "aws_instance" "bastion" {
   ami           = "ami-005fc0f236362e99f"
   instance_type = "t2.micro"
