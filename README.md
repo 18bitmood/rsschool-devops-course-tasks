@@ -2,14 +2,14 @@
 
 ## Files structure:
 
-`backend.tf` - setups s3 bucket to store Terraform state.
 `general.tf` - general Terraform settings.
 `providers.tf` - defines providers here.
+`backend.tf` - setups s3 bucket to store Terraform state.
 `variables.tf` - definition of variables can be used.
 
+`.github/workflows/terraform.yml` - the code for GitHub actions.
 `github-oidc.tf` - settings for setup OIDC connection of GitHub actions with AWS.
 `github-policies.tf` - attaching required policies for GitHub actions being able to run the code.
-`.github/workflows/terraform.yml` - the code for GitHub actions.
 
 `vpc.tf` - the definition for VPC.
 `key-pair.tf` - the code for creating the key pair.
