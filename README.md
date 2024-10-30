@@ -1,18 +1,29 @@
-# rsschool-devops-course-tasks
+# RS School DevOps course
 
-Files structure:
+## Files structure:
 
-`backend.tf` - for setup s3 bucket for terraform to store the state.
-`general.tf` - general terraform settings.
+`general.tf` - general Terraform settings.
+`providers.tf` - defines providers here.
+`backend.tf` - setups s3 bucket to store Terraform state.
+`variables.tf` - definition of variables can be used.
+
+`.github/workflows/terraform.yml` - the code for GitHub actions.
 `github-oidc.tf` - settings for setup OIDC connection of GitHub actions with AWS.
 `github-policies.tf` - attaching required policies for GitHub actions being able to run the code.
-`providers.tf` - defines providers here.
-`resources.tf` - what resources will be created.
-`variables.tf` - definition of variables can be used.
-`bastion.tf` - definition of bastion host to access private instances.
-`ec2-instances.tf` - the code for EC2 instances creation in public and private subnets.
-`network-acls.tf` - ACLs releated code.
-`security-groups.tf` - all the code related to security groups.
-`vpc.tf` - the definition for vpc.
 
-Github actions workflow are defined in  `.github/workflows/terraform.yml`.
+`vpc.tf` - the definition for VPC.
+`key-pair.tf` - the code for creating the key pair.
+`security-groups.tf` - all the code related to security groups.
+`network-acls.tf` - ACLs releated code.
+
+`ec2-instances.tf` - the code for EC2 instances creation in public and private subnets.
+`nat-instance.tf` - the code for NAT instance (and related resources) creation.
+`bastion.tf` - definition of bastion host to access private instances. Also these file includes the code for creating the Kubernetes cluster on private instances.
+
+The code in current state creates the next infrastructure:
+
+1. VPC with 2 public and 2 private subnets.
+2. EC2 instances in public and private subnets.
+3. NAT instance - through which the private instances can access the Internet.
+4. Bastion host - through which you can access private instances.
+5. Kubernetes cluster deployed on private instances.
