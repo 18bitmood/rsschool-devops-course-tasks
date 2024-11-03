@@ -56,11 +56,11 @@ resource "aws_instance" "ubuntu_server_instance" {
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo sed -i \"s/127.0.0.1/${aws_instance.ubuntu_server_instance.private_ip}/g\" /etc/rancher/k3s/k3s.yaml'",
       # Set proper permissions for kubeconfig
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo chmod 600 /etc/rancher/k3s/k3s.yaml'",
+      # Install Jenkins
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo kubectl create namespace jenkins'",
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo helm repo add jenkins https://charts.jenkins.io && sudo helm repo update'",
       "echo '${file("./jenkins-values.yaml")}' > /home/ubuntu/jenkins-values.yaml",
       "scp -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/jenkins-values.yaml ubuntu@${aws_instance.ubuntu_agent_instance.private_ip}:/home/ubuntu/jenkins-values.yaml",
-      # Install Jenkins
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo helm install jenkins jenkins/jenkins --namespace jenkins --create-namespace --set controller.serviceType=NodePort --set controller.installPlugins=false --set controller.additionalPlugins=[] -f /home/ubuntu/jenkins-values.yaml --kubeconfig /etc/rancher/k3s/k3s.yaml'"
     ]
   }
