@@ -16,14 +16,31 @@
 `security-groups.tf` - all the code related to security groups.
 `network-acls.tf` - ACLs releated code.
 
+`server.tf` - the code for creating EC2 instance that will be used as K3S and Jenkins server.
+`agent.tf` - the code for creating EC2 instance that will be used as K3S agent.
+
+Outdated files:
 `ec2-instances.tf` - the code for EC2 instances creation in public and private subnets.
 `nat-instance.tf` - the code for NAT instance (and related resources) creation.
 `bastion.tf` - definition of bastion host to access private instances. Also these file includes the code for creating the Kubernetes cluster on private instances.
 
 The code in current state creates the next infrastructure:
 
-1. VPC with 2 public and 2 private subnets.
-2. EC2 instances in public and private subnets.
-3. NAT instance - through which the private instances can access the Internet.
-4. Bastion host - through which you can access private instances.
-5. Kubernetes cluster deployed on private instances.
+1. VPC with 2 public subnet.
+2. EC2 instances in public subnet. One of them is used as K3S server and the other one is used as K3S agent.
+
+## Accessing Jenkins
+
+After the infrastructure is deployed:
+
+1. Get Jenkins NodePort by running this command on the server:
+```bash
+sudo kubectl get svc -n jenkins
+```
+
+2. Retrieve the admin password by running this command on the server:
+```bash
+kubectl exec -n jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password
+```
+
+3. Open http://AGENT_PUBLIC_IP:NODEPORT and login with admin user and password.

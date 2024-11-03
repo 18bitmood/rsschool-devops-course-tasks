@@ -2,6 +2,8 @@ controller:
   JCasC:
     configScripts:
       welcome-job: |
+        jenkins:
+          systemMessage: "Welcome to Jenkins!"
         jobs:
           - script: >
               job('hello-world') {
@@ -10,3 +12,7 @@ controller:
                   shell('echo Hello World!')
                 }
               }
+  installPlugins:
+    - configuration-as-code:latest
+    - job-dsl:latest
+    - workflow-aggregator:latest
