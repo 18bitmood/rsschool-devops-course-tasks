@@ -1,0 +1,18 @@
+controller:
+  JCasC:
+    configScripts:
+      welcome-job: |
+        jenkins:
+          systemMessage: "Welcome to Jenkins!"
+        jobs:
+          - script: >
+              job('hello-world') {
+                description('A simple hello world job')
+                steps {
+                  shell('echo Hello World!')
+                }
+              }
+  installPlugins:
+    - configuration-as-code:latest
+    - job-dsl:latest
+    - workflow-aggregator:latest
