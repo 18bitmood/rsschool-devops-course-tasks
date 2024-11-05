@@ -27,6 +27,15 @@ resource "aws_instance" "ubuntu_server_instance" {
       "chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys",
       "chown ubuntu:ubuntu /home/ubuntu/.ssh/${var.bastion_key_name}.pem",
 
+      # Configure RAM swap on server
+      "echo '${file("./ram-swap.sh")}' > /home/ubuntu/ram-swap.sh",
+      "chmod +x /home/ubuntu/ram-swap.sh",
+      "sudo /home/ubuntu/ram-swap.sh",
+
+      # Configure RAM swap on agent
+      "scp -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/ram-swap.sh ubuntu@${aws_instance.ubuntu_agent_instance.private_ip}:/home/ubuntu/ram-swap.sh",
+      "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'chmod +x /home/ubuntu/ram-swap.sh && sudo /home/ubuntu/ram-swap.sh'",
+
       # Install k3s on server
       "curl -sfL https://get.k3s.io -o k3s-install.sh && sudo sh k3s-install.sh",
       # Save token to a file
@@ -56,12 +65,17 @@ resource "aws_instance" "ubuntu_server_instance" {
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo sed -i \"s/127.0.0.1/${aws_instance.ubuntu_server_instance.private_ip}/g\" /etc/rancher/k3s/k3s.yaml'",
       # Set proper permissions for kubeconfig
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo chmod 600 /etc/rancher/k3s/k3s.yaml'",
-      # Install Jenkins
+      # Prepare Jenkins Installation
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo kubectl create namespace jenkins'",
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo helm repo add jenkins https://charts.jenkins.io && sudo helm repo update'",
       "echo '${file("./jenkins-values.yaml")}' > /home/ubuntu/jenkins-values.yaml",
       "scp -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/jenkins-values.yaml ubuntu@${aws_instance.ubuntu_agent_instance.private_ip}:/home/ubuntu/jenkins-values.yaml",
-      "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo helm install jenkins jenkins/jenkins --namespace jenkins --create-namespace --set controller.serviceType=NodePort --set controller.installPlugins=false --set controller.additionalPlugins=[] -f /home/ubuntu/jenkins-values.yaml --kubeconfig /etc/rancher/k3s/k3s.yaml'"
+      # Install Jenkins
+      "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo helm install jenkins jenkins/jenkins --namespace jenkins --create-namespace --set controller.serviceType=NodePort --set controller.installPlugins=false --set controller.additionalPlugins=[] -f /home/ubuntu/jenkins-values.yaml --kubeconfig /etc/rancher/k3s/k3s.yaml'",
+      # Restart k3s-agent on agent
+      "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'sudo systemctl restart k3s-agent'",
+      # Stop k3s - to access the server instance
+      "sudo service k3s stop"
     ]
   }
 
