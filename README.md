@@ -92,12 +92,6 @@ mv linux-amd64/helm /var/jenkins_home/bin/
 sudo kubectl rollout restart statefulset jenkins -n jenkins
 ```
 
-
-Need to be run on server:
-
-sudo kubectl create configmap k3s-config --from-file=/etc/rancher/k3s/k3s.yaml -n jenkins
-
-
 ## Troubleshoot unavailable updates.jenkins.io
 
 
@@ -108,27 +102,20 @@ sudo kubectl -n kube-system rollout restart deployment coredns
 sudo kubectl rollout restart statefulset jenkins -n jenkins
 ```
 
-
-DNS resolution issue that can be fixed on AGENT:
-
-
-Here's what worked to fix DNS resolution in the k3s cluster:
+If it doen't work, then try the next:
 
 Initial Testing:
+```bash
 sudo kubectl run dns-debug -n kube-system --image=busybox:1.28 -- sleep 3600
 sudo kubectl exec -it -n kube-system dns-debug -- nslookup google.com 10.0.0.2
-
-
+```
 
 Then edit the k3s config file:
 
 ```bash
 sudo vi /etc/rancher/k3s/config.yaml
-```
+# And add the following lines:
 
-And add the following lines:
-
-```bash
 kubelet-arg:
   - "cluster-dns=10.0.0.2"
   - "cluster-domain=cluster.local"
@@ -139,4 +126,10 @@ Apply Changes:
 
 ```bash
 sudo systemctl restart k3s
+```
+
+After that, need to be run on SERVER:
+
+```bash
+sudo kubectl create configmap k3s-config --from-file=/etc/rancher/k3s/k3s.yaml -n jenkins
 ```
