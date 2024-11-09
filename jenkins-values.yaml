@@ -4,15 +4,44 @@ controller:
       welcome-job: |
         jenkins:
           systemMessage: "Welcome to Jenkins!"
-        jobs:
           - script: >
-              job('hello-world') {
-                description('A simple hello world job')
-                steps {
-                  shell('echo Hello World!')
+              pipelineJob('deploy-wordpress') {
+                definition {
+                  cpsScm {
+                    scm {
+                      git {
+                        remote { url 'https://github.com/18bitmood/rsschool-wordpress.git' }
+                        branch '*/main'
+                      }
+                    }
+                    scriptPath 'Jenkinsfile'
+                  }
                 }
               }
-  installPlugins:
-    - configuration-as-code:latest
-    - job-dsl:latest
-    - workflow-aggregator:latest
+  installPlugins: false
+  additionalPlugins: []
+  containers:
+    - name: jenkins
+      image: jenkins/jenkins:2.479.1-jdk17
+      command:
+        - /bin/sh
+        - -c
+        - |
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh
+          /sbin/tini -- /usr/local/bin/jenkins.sh
+
+controller:
+  initContainers:
+    - name: install-helm
+      image: alpine/helm:3.13.2
+      command:
+        - sh
+        - -c
+        - |
+          cp /usr/bin/helm /var/jenkins_home/helm
+          chmod +x /var/jenkins_home/helm
+      volumeMounts:
+        - name: jenkins-home
+          mountPath: /var/jenkins_home
