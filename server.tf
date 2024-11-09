@@ -37,7 +37,7 @@ resource "aws_instance" "ubuntu_server_instance" {
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'chmod +x /home/ubuntu/ram-swap.sh && sudo /home/ubuntu/ram-swap.sh'",
 
       # Configure RAM swap on second agent
-      "scp -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/ram-swap.sh ubuntu@${aws_instance.ubuntu_second_agent_instance.private_ip}:/home/ubuntu/ram-swap.sh",
+      "scp -C -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/ram-swap.sh ubuntu@${aws_instance.ubuntu_second_agent_instance.private_ip}:/home/ubuntu/ram-swap.sh",
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_second_agent_instance.private_ip} 'chmod +x /home/ubuntu/ram-swap.sh && sudo /home/ubuntu/ram-swap.sh'",
 
       # Install k3s on server
@@ -46,16 +46,16 @@ resource "aws_instance" "ubuntu_server_instance" {
       "sudo cat /var/lib/rancher/k3s/server/node-token > /home/ubuntu/k3s_token.txt",
 
       # Transfer token to agent instance
-      "scp -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/k3s_token.txt ubuntu@${aws_instance.ubuntu_agent_instance.private_ip}:/home/ubuntu/k3s_token.txt",
+      "scp -C -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/k3s_token.txt ubuntu@${aws_instance.ubuntu_agent_instance.private_ip}:/home/ubuntu/k3s_token.txt",
       # Download the k3s installer script on agent instance
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'curl -sfL https://get.k3s.io -o k3s-install.sh'",
       # Install k3s in agent mode on agent instance
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'timeout 300 bash -c \"K3S_URL=https://${aws_instance.ubuntu_server_instance.private_ip}:6443 K3S_TOKEN=$(cat /home/ubuntu/k3s_token.txt) sh k3s-install.sh agent\"'",
 
       # Transfer token to second agent instance
-      "scp -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/k3s_token.txt ubuntu@${aws_instance.ubuntu_second_agent_instance.private_ip}:/home/ubuntu/k3s_token.txt",
-      # Download the k3s installer script on second agent instance
-      "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_second_agent_instance.private_ip} 'curl -sfL https://get.k3s.io -o k3s-install.sh'",
+      "scp -C -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/k3s_token.txt ubuntu@${aws_instance.ubuntu_second_agent_instance.private_ip}:/home/ubuntu/k3s_token.txt",
+      # Pass k3s installer from first agent instance to second agent instance
+      "scp -C -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip}:/home/ubuntu/k3s-install.sh ubuntu@${aws_instance.ubuntu_second_agent_instance.private_ip}:/home/ubuntu/k3s-install.sh",
       # Install k3s in agent mode on second agent instance
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_second_agent_instance.private_ip} 'timeout 300 bash -c \"K3S_URL=https://${aws_instance.ubuntu_server_instance.private_ip}:6443 K3S_TOKEN=$(cat /home/ubuntu/k3s_token.txt) sh k3s-install.sh agent\"'",
 
@@ -65,9 +65,9 @@ resource "aws_instance" "ubuntu_server_instance" {
       "sudo cat /etc/rancher/k3s/k3s.yaml > /home/ubuntu/k3s.yaml",
 
       # Copy kubeconfig to agent
-      "scp -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/k3s.yaml ubuntu@${aws_instance.ubuntu_agent_instance.private_ip}:/home/ubuntu/k3s.yaml",
+      "scp -C -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/k3s.yaml ubuntu@${aws_instance.ubuntu_agent_instance.private_ip}:/home/ubuntu/k3s.yaml",
       # Copy kubeconfig to second agent
-      "scp -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/k3s.yaml ubuntu@${aws_instance.ubuntu_second_agent_instance.private_ip}:/home/ubuntu/k3s.yaml",
+      "scp -C -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no /home/ubuntu/k3s.yaml ubuntu@${aws_instance.ubuntu_second_agent_instance.private_ip}:/home/ubuntu/k3s.yaml",
 
       # Install Helm on agent
       "ssh -i /home/ubuntu/.ssh/${var.bastion_key_name}.pem -o StrictHostKeyChecking=no ubuntu@${aws_instance.ubuntu_agent_instance.private_ip} 'curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && chmod 700 get_helm.sh && sudo ./get_helm.sh'",
