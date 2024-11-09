@@ -49,7 +49,7 @@ resource "aws_security_group" "allow_all" {
     protocol    = "udp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   ingress {
     from_port   = 53
     to_port     = 53
